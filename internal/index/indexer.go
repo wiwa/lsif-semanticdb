@@ -119,6 +119,9 @@ func (i *indexer) loadDatabase(path string) error {
 
 	for _, document := range textDocuments.GetDocuments() {
 		symbols := map[string]*pb.SymbolInformation{}
+		for key, elem := range symbols {
+			log.Infoln("key: ", key, "elem: ", elem)
+		}
 		for _, symbol := range document.GetSymbols() {
 			key := symbol.GetSymbol()
 			if _, ok := symbols[key]; ok {
