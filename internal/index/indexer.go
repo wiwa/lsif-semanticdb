@@ -117,25 +117,23 @@ func (i *indexer) loadDatabase(path string) error {
 		return err
 	}
 
-	for _, document := range textDocuments.GetDocuments() {
-		symbols := map[string]*pb.SymbolInformation{}
-		for key, elem := range symbols {
-			log.Infoln("key: ", key, "elem: ", elem)
+	// must only look at non-warning (first) documents in textdocuments
+	// for _, document := range textDocuments.GetDocuments() {
+	document := textDocuments.GetDocuments()[0]
+	symbols := map[string]*pb.SymbolInformation{}
+	for _, symbol := range document.GetSymbols() {
+		key := symbol.GetSymbol()
+		if _, ok := symbols[key]; ok {
+			return fmt.Errorf("duplicate symbol: %s", key)
 		}
-		for _, symbol := range document.GetSymbols() {
-			key := symbol.GetSymbol()
-			if _, ok := symbols[key]; ok {
-				return fmt.Errorf("duplicate symbol: %s", key)
-			}
-			symbols[key] = symbol
-		}
+		symbols[key] = symbol
+	}
 
-		i.files[document.GetUri()] = &fileInfo{
-			document:  document,
-			symbols:   symbols,
-			localDefs: map[string]*defInfo{},
-			localRefs: map[string]*refResultInfo{},
-		}
+	i.files[document.GetUri()] = &fileInfo{
+		document:  document,
+		symbols:   symbols,
+		localDefs: map[string]*defInfo{},
+		localRefs: map[string]*refResultInfo{},
 	}
 
 	return nil
